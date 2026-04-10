@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form</title>
+</head>
+<body>
+    <form onsubmit="return validateForm()">
+        Name: <input type="text" id="name" >
+            <br><br>
+        Email: <input type="text" id="email" onblur="validateEmail()">
+        <br><br>
+        password: <input type="password" id="password" onblur="validatePassword()">
+        <br><br>
+        <button type="submit">Submit</button>
+    </form>
+    <script>
+        function validateForm(){
+            let name = document.getElementById("name").value;
+            if(name === ""){
+                alert("Name is Required");
+                return false;
+            }
+            return true;
+        }
+        function validateEmail(){
+            let email = document.getElementById("email").value;
+            let pattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+            if(!email.match(pattern)){
+                alert("Enter the Valid Email");
+                return false;
+            }
+            return true;
+        }
+
+       function validatePassword(){
+        let pass = document.getElementById("password").value;
+
+        if(pass.length < 6){
+            alert("Password must be at least 6 characters");
+            return false;
+        }
+        return true;
+       }
+    </script>
+</body>
+</html>

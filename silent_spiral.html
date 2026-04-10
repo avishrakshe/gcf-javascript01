@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Silent Spiral — Live Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --teal: #0D9488;
+    --teal-dark: #0F766E;
+    --teal-deep: #064E3B;
+    --teal-light: #CCFBF1;
+    --teal-mid: #5EEAD4;
+    --purple: #7C3AED;
+    --purple-light: #EDE9FE;
+    --purple-mid: #A78BFA;
+    --amber: #D97706;
+    --amber-light: #FEF3C7;
+    --rose: #E11D48;
+    --rose-light: #FFE4E6;
+    --bg: #050D0C;
+    --surface: #0C1F1D;
+    --surface2: #112420;
+    --border: rgba(13,148,136,0.2);
+    --text: #E0FDF8;
+    --muted: #6B9990;
+    --white: #ffffff;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND ── */
+  .bg-aura {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 15%, rgba(13,148,136,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 60% at 85% 75%, rgba(124,58,237,0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(13,148,136,0.04) 0%, transparent 60%);
+  }
+
+  /* Floating particles */
+  .particle {
+    position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+    animation: floatUp linear infinite;
+    background: radial-gradient(circle, rgba(13,148,136,0.3), transparent);
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(-100px) scale(1); opacity: 0; }
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── HERO ── */
+  .hero { text-align: center; padding: 64px 24px 40px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(13,148,136,0.12); border: 1px solid rgba(13,148,136,0.35);
+    border-radius: 100px; padding: 6px 18px; font-size: 13px; color: var(--teal-mid);
+    margin-bottom: 28px; font-family: 'JetBrains Mono', monospace;
+  }
+  .spiral-icon {
+    display: inline-block; font-size: 64px; margin-bottom: 16px;
+    animation: spiralSpin 20s linear infinite;
+  }
+  @keyframes spiralSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(40px, 7vw, 72px);
+    line-height: 1.05; margin-bottom: 8px;
+    background: linear-gradient(135deg, #fff 0%, var(--teal-mid) 50%, var(--purple-mid) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub-italic {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 18px; color: var(--teal-mid); margin-bottom: 16px;
+  }
+  .hero p { color: var(--muted); font-size: 16px; max-width: 520px; margin: 0 auto 40px; line-height: 1.8; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 4px; width: fit-content; margin: 0 auto 36px;
+  }
+  .tab-btn {
+    padding: 10px 22px; border-radius: 12px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 700;
+    transition: all 0.25s; background: transparent; color: var(--muted);
+  }
+  .tab-btn.active {
+    background: var(--teal-dark); color: #fff;
+    box-shadow: 0 4px 20px rgba(13,148,136,0.35);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeUp 0.35s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── DOC PREVIEW ── */
+  .doc-preview {
+    background: #fff; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+  }
+  .doc-toolbar {
+    background: #F3F4F6; border-bottom: 1px solid #E5E7EB;
+    padding: 10px 18px; display: flex; align-items: center; gap: 8px;
+  }
+  .doc-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .doc-filename { margin-left: 12px; font-size: 12px; color: #9CA3AF; font-family: 'JetBrains Mono', monospace; }
+  .doc-body {
+    padding: 52px 68px; color: #111827; font-family: Georgia, serif;
+    max-height: 620px; overflow-y: auto;
+  }
+  .doc-body::-webkit-scrollbar { width: 5px; }
+  .doc-body::-webkit-scrollbar-track { background: #F9FAFB; }
+  .doc-body::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+
+  /* Doc inner styles */
+  .dc { border-radius: 10px; margin-bottom: 28px; overflow: hidden; }
+  .dc-cover { background: #0F766E; color: white; text-align: center; padding: 44px 32px; }
+  .dc-cover-emoji { font-size: 52px; margin-bottom: 14px; }
+  .dc-cover h1 { font-family: 'Nunito', sans-serif; font-size: 34px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+  .dc-cover .sub { color: #99F6E4; font-family: 'Nunito', sans-serif; font-size: 15px; margin-bottom: 14px; }
+  .dc-cover .meta { color: #5EEAD4; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  .dc-h1 { font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 800; color: #111827; border-bottom: 3px solid #0D9488; padding-bottom: 8px; margin: 28px 0 14px; }
+  .dc-h2 { font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; color: #0D9488; margin: 18px 0 8px; }
+  .dc-p  { font-size: 12.5px; color: #374151; line-height: 1.75; margin-bottom: 10px; }
+  .dc-li { font-size: 12.5px; color: #374151; line-height: 1.75; margin-bottom: 5px; padding-left: 18px; position: relative; }
+  .dc-li::before { content: "•"; position: absolute; left: 5px; color: #0D9488; }
+
+  .dc-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 18px 0; }
+  .dc-stat { border-top: 4px solid; padding: 14px 10px; text-align: center; border-radius: 6px; }
+  .dc-stat.t { border-color: #0D9488; background: #CCFBF1; }
+  .dc-stat.p { border-color: #7C3AED; background: #EDE9FE; }
+  .dc-stat.a { border-color: #D97706; background: #FEF3C7; }
+  .dc-stat .dn { font-family: 'Nunito', sans-serif; font-size: 26px; font-weight: 800; }
+  .dc-stat.t .dn { color: #0D9488; }
+  .dc-stat.p .dn { color: #7C3AED; }
+  .dc-stat.a .dn { color: #D97706; }
+  .dc-stat .dl { font-family: 'Nunito', sans-serif; font-size: 10px; color: #6B7280; margin-top: 3px; line-height: 1.3; }
+
+  .dc-box { border-radius: 6px; overflow: hidden; margin: 14px 0; }
+  .dc-box-hdr { padding: 10px 14px; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 800; color: white; }
+  .dc-box-body { padding: 12px 14px; }
+  .dc-box.t .dc-box-hdr { background: #0F766E; }
+  .dc-box.t .dc-box-body { background: #CCFBF1; }
+  .dc-box.p .dc-box-hdr { background: #7C3AED; }
+  .dc-box.p .dc-box-body { background: #EDE9FE; }
+
+  .dc-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 11.5px; }
+  .dc-table th { background: #064E3B; color: white; padding: 8px 10px; text-align: left; font-family: 'Nunito', sans-serif; font-weight: 700; }
+  .dc-table td { padding: 7px 10px; border: 1px solid #E5E7EB; color: #374151; }
+  .dc-table tr:nth-child(even) td { background: #F9FAFB; }
+  .dc-table .hi { background: #CCFBF1 !important; color: #0F766E; font-weight: 700; }
+
+  .dc-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+  .dc-col { border-radius: 8px; padding: 14px; }
+  .dc-col.t { background: #CCFBF1; }
+  .dc-col.p { background: #EDE9FE; }
+  .dc-col-title { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; margin-bottom: 8px; }
+  .dc-col.t .dc-col-title { color: #0D9488; }
+  .dc-col.p .dc-col-title { color: #7C3AED; }
+
+  .dc-closing { background: #0F766E; color: white; text-align: center; padding: 28px; border-radius: 8px; margin-top: 28px; }
+  .dc-closing p { font-size: 13px; color: #99F6E4; line-height: 1.7; font-style: italic; }
+
+  /* ── PHONE FRAME ── */
+  .phone-wrap { display: flex; flex-direction: column; align-items: center; }
+  .phone-frame {
+    width: 300px;
+    background: #070F0E;
+    border-radius: 42px;
+    border: 2px solid rgba(13,148,136,0.25);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 60px rgba(13,148,136,0.06), inset 0 1px 0 rgba(255,255,255,0.04);
+    overflow: hidden;
+  }
+  .phone-notch { background: #070F0E; height: 26px; display: flex; align-items: center; justify-content: center; }
+  .phone-notch-pill { width: 72px; height: 9px; background: #0C1F1D; border-radius: 10px; }
+  .phone-screen { min-height: 560px; position: relative; overflow: hidden; }
+
+  .screen { display: none; padding: 18px 16px; }
+  .screen.active { display: block; animation: slideIn 0.3s cubic-bezier(0.4,0,0.2,1); }
+  @keyframes slideIn { from{opacity:0;transform:translateX(16px);} to{opacity:1;transform:translateX(0);} }
+
+  .p-status { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 16px; }
+  .p-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); display: inline-block; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  .p-logo { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--teal-mid); margin-bottom: 18px; text-align: center; }
+
+  /* Mood wheel */
+  .mood-wheel { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 16px; }
+  .mood-chip {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 20px;
+    padding: 6px 4px; text-align: center; cursor: pointer; transition: all 0.2s;
+    font-size: 9px; color: var(--muted);
+  }
+  .mood-chip:hover, .mood-chip.sel {
+    background: rgba(13,148,136,0.2); border-color: var(--teal); color: var(--teal-mid);
+  }
+  .mood-chip .me { font-size: 18px; display: block; margin-bottom: 3px; }
+
+  /* Journal input */
+  .journal-box {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 14px;
+    padding: 12px; margin-bottom: 12px; min-height: 80px; position: relative;
+    overflow: hidden;
+  }
+  .journal-text { font-size: 11px; color: var(--text); line-height: 1.7; }
+  .journal-cursor { display: inline-block; width: 2px; height: 12px; background: var(--teal); animation: blink 1s infinite; vertical-align: text-bottom; margin-left: 1px; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+  .emotion-tag { display: inline-flex; align-items: center; gap: 4px; background: rgba(13,148,136,0.15); border: 1px solid rgba(13,148,136,0.3); border-radius: 100px; padding: 3px 10px; font-size: 9px; color: var(--teal-mid); margin: 4px 3px 0; }
+  .emotion-tag.p { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.3); color: var(--purple-mid); }
+
+  .prompt-card {
+    background: linear-gradient(135deg, rgba(13,148,136,0.12), rgba(124,58,237,0.08));
+    border: 1px solid rgba(13,148,136,0.25); border-radius: 12px; padding: 12px; margin-bottom: 12px;
+  }
+  .prompt-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-family: 'JetBrains Mono', monospace; }
+  .prompt-text { font-family: 'Playfair Display', serif; font-style: italic; font-size: 12px; color: var(--text); line-height: 1.6; }
+
+  /* Emotion timeline */
+  .emo-timeline { margin-bottom: 14px; }
+  .emo-tl-label { font-size: 10px; color: var(--muted); margin-bottom: 8px; }
+  .emo-tl-row { display: flex; align-items: center; gap: 3px; }
+  .emo-dot-col { display: flex; flex-direction: column; gap: 3px; align-items: center; flex: 1; }
+  .emo-dot { width: 100%; height: 28px; border-radius: 5px; transition: all 0.4s; cursor: pointer; }
+  .emo-dot:hover { filter: brightness(1.2); transform: scaleY(1.1); }
+  .emo-day { font-size: 8px; color: var(--muted); margin-top: 4px; text-align: center; }
+
+  /* Pattern alert */
+  .pattern-alert {
+    background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 12px; padding: 12px; margin-bottom: 10px;
+  }
+  .pa-label { font-size: 9px; color: var(--purple-mid); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-family: 'JetBrains Mono', monospace; }
+  .pa-text { font-size: 11px; color: var(--text); line-height: 1.6; }
+
+  /* Vocab expansion */
+  .vocab-section { margin-bottom: 14px; }
+  .vocab-label { font-size: 10px; color: var(--muted); margin-bottom: 8px; }
+  .vocab-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+  .vocab-word {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 100px; padding: 4px 10px; font-size: 10px; color: var(--muted);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .vocab-word:hover { background: rgba(13,148,136,0.15); border-color: var(--teal); color: var(--teal-mid); transform: scale(1.05); }
+  .vocab-word.core { background: rgba(13,148,136,0.12); border-color: rgba(13,148,136,0.3); color: var(--teal-mid); }
+
+  /* Sim controls */
+  .sim-controls { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+  .sim-btn {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 100px;
+    padding: 8px 16px; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--text); cursor: pointer; transition: all 0.2s;
+  }
+  .sim-btn:hover { background: var(--teal-dark); border-color: var(--teal); }
+  .sim-btn.active { background: var(--teal-dark); border-color: var(--teal); color: white; }
+
+  /* ── HOW IT WORKS ── */
+  .flow { display: flex; flex-direction: column; }
+  .flow-step {
+    display: flex; gap: 18px; padding: 18px 0 18px 28px;
+    border-left: 2px solid var(--border); margin-left: 16px; position: relative;
+  }
+  .flow-step::before {
+    content:''; width:12px; height:12px; border-radius:50%;
+    background: var(--teal-dark); border: 2px solid var(--bg);
+    position: absolute; left:-7px; top:22px;
+    box-shadow: 0 0 14px rgba(13,148,136,0.6);
+  }
+  .flow-step:last-child { border-left-color: transparent; }
+  .fs-num { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--teal-mid); min-width:24px; padding-top:3px; }
+  .fs-title { font-size:14px; font-weight:700; color:#fff; margin-bottom:5px; }
+  .fs-desc { font-size:12px; color:var(--muted); line-height:1.7; }
+  .fs-tag { display:inline-block; margin-top:7px; margin-right:4px; background:rgba(13,148,136,0.1); border:1px solid rgba(13,148,136,0.25); border-radius:100px; padding:2px 10px; font-size:10px; color:var(--teal-mid); font-family:'JetBrains Mono',monospace; }
+  .fs-tag.p { background:rgba(124,58,237,0.1); border-color:rgba(124,58,237,0.25); color:var(--purple-mid); }
+
+  .how-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:28px; }
+  .how-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:16px;
+    padding:22px; transition:all 0.2s; position:relative; overflow:hidden;
+  }
+  .how-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(13,148,136,0.05), transparent); }
+  .how-card:hover { border-color:rgba(13,148,136,0.4); transform:translateY(-2px); }
+  .hc-num { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--teal-mid); margin-bottom:10px; }
+  .hc-icon { font-size:26px; margin-bottom:10px; }
+  .hc-title { font-size:14px; font-weight:700; color:#fff; margin-bottom:6px; }
+  .hc-desc { font-size:12px; color:var(--muted); line-height:1.65; }
+
+  .section-title { font-family:'Playfair Display',serif; font-size:28px; color:#fff; margin-bottom:8px; }
+  .section-sub { color:var(--muted); font-size:14px; margin-bottom:28px; line-height:1.7; }
+  hr.divider { border:none; border-top:1px solid var(--border); margin:40px 0; }
+
+  @media(max-width:680px){
+    .how-grid{grid-template-columns:1fr;}
+    .doc-body{padding:24px 18px;}
+    .dc-stats{grid-template-columns:1fr;}
+    .dc-2col{grid-template-columns:1fr;}
+  }
+
+  /* Typing animation */
+  @keyframes typeIn {
+    from{width:0;} to{width:100%;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-aura"></div>
+
+<!-- Floating particles -->
+<script>
+  for(let i=0;i<12;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const sz=Math.random()*4+2;
+    p.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;animation-duration:${12+Math.random()*18}s;animation-delay:${Math.random()*20}s;opacity:${0.1+Math.random()*0.2}`;
+    document.body.appendChild(p);
+  }
+</script>
+
+<div class="wrapper">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">
+      <span class="p-dot"></span>
+      Live Interactive Demo
+    </div>
+    <div class="spiral-icon">🌀</div>
+    <h1>The Silent Spiral</h1>
+    <div class="hero-sub-italic">Personal Mental-State Awareness Companion</div>
+    <p>See exactly what the hackathon document looks like and how the awareness system works — live.</p>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('doc',this)">📄 Document Output</button>
+      <button class="tab-btn" onclick="switchTab('app',this)">📱 App Simulation</button>
+      <button class="tab-btn" onclick="switchTab('flow',this)">⚙️ How It Works</button>
+    </div>
+  </div>
+
+  <!-- ════════════════ TAB 1: DOCUMENT ════════════════ -->
+  <div class="tab-content active" id="tab-doc">
+    <div class="doc-preview">
+      <div class="doc-toolbar">
+        <div class="doc-dot" style="background:#FF5F57"></div>
+        <div class="doc-dot" style="background:#FEBC2E"></div>
+        <div class="doc-dot" style="background:#28C840"></div>
+        <span class="doc-filename">TheSilentSpiral_Hackathon.docx — Microsoft Word</span>
+      </div>
+      <div class="doc-body">
+
+        <!-- Cover -->
+        <div class="dc dc-cover">
+          <div class="dc-cover-emoji">🌀</div>
+          <h1>THE SILENT SPIRAL</h1>
+          <div class="sub">Personal Mental-State Awareness Companion</div>
+          <div class="meta">Hackathon 2025 &nbsp;|&nbsp; Category: Mental Health Tech &nbsp;|&nbsp; Track: Social Impact</div>
+        </div>
+
+        <!-- Exec Summary -->
+        <div class="dc-h1">Executive Summary</div>
+        <p class="dc-p">The Silent Spiral is an AI-powered self-awareness companion designed to help individuals recognize subtle emotional and behavioral patterns before they escalate into mental health crises. By combining guided journaling, NLP-based emotion detection, and personalized pattern recognition, the platform provides a private, non-judgmental space for reflection and early awareness.</p>
+
+        <div class="dc-stats">
+          <div class="dc-stat t"><div class="dn">1 in 5</div><div class="dl">Adults experience mental illness annually</div></div>
+          <div class="dc-stat p"><div class="dn">11 yrs</div><div class="dl">Average delay between symptoms & treatment</div></div>
+          <div class="dc-stat a"><div class="dn">75%</div><div class="dl">Cases go untreated in low-income regions</div></div>
+        </div>
+
+        <!-- Problem -->
+        <div class="dc-h1">The Problem</div>
+        <p class="dc-p">Mental health challenges rarely appear overnight. They emerge gradually through small, often imperceptible shifts in mood, behavior, and routine. By the time most people recognize a problem, it has already compounded into something overwhelming.</p>
+
+        <div class="dc-2col">
+          <div class="dc-col t">
+            <div class="dc-col-title">The Awareness Gap</div>
+            <div class="dc-li">Limited emotional vocabulary</div>
+            <div class="dc-li">Cultural and social stigma</div>
+            <div class="dc-li">Behavioral changes go untracked</div>
+            <div class="dc-li">No safe space for reflection</div>
+          </div>
+          <div class="dc-col p">
+            <div class="dc-col-title">The Escalation Risk</div>
+            <div class="dc-li">Warning signs missed until crisis</div>
+            <div class="dc-li">Access to professionals scarce</div>
+            <div class="dc-li">Solutions feel clinical and cold</div>
+            <div class="dc-li">Young adults most underserved</div>
+          </div>
+        </div>
+
+        <!-- Solution -->
+        <div class="dc-h1">Our Solution</div>
+        <div class="dc-h2">1. Guided Journaling Tools</div>
+        <p class="dc-p">Contextual daily prompts that gently guide users to articulate feelings they might not have words for. Prompts adapt based on previous entries and detected emotional tone.</p>
+        <div class="dc-li">"You've mentioned feeling 'tired' a lot this week — is it physical, emotional, or something else?"</div>
+        <div class="dc-li">"What's one small thing that felt manageable today, even if everything else felt heavy?"</div>
+
+        <div class="dc-h2">2. NLP Emotion Detection Pipeline</div>
+        <table class="dc-table">
+          <tr><th>Layer</th><th>Description</th></tr>
+          <tr><td class="hi">Preprocessing</td><td>Tokenization, stop-word filtering, context normalization</td></tr>
+          <tr><td class="hi">Emotion Classification</td><td>Fine-tuned BERT/RoBERTa on GoEmotions (27 categories)</td></tr>
+          <tr><td class="hi">Sentiment Drift</td><td>Time-series polarity analysis to detect negative drift</td></tr>
+          <tr><td class="hi">Linguistic Markers</td><td>Absolutist thinking, isolation language, fatigue descriptors</td></tr>
+          <tr><td class="hi">Privacy Layer</td><td>All NLP processing on-device via ONNX Runtime / TFLite</td></tr>
+        </table>
+
+        <!-- Privacy box -->
+        <div class="dc-box t">
+          <div class="dc-box-hdr">🔒 Privacy-First Architecture</div>
+          <div class="dc-box-body">
+            <div class="dc-li">All journal data stored locally with AES-256 encryption.</div>
+            <div class="dc-li">Zero data transmission without explicit user consent.</div>
+            <div class="dc-li">No sale or sharing of emotional data with any third party.</div>
+            <div class="dc-li">Users own their data completely — one-tap export and deletion.</div>
+          </div>
+        </div>
+
+        <!-- Ethics box -->
+        <div class="dc-box p">
+          <div class="dc-box-hdr">⚖️ Ethical Guardrails</div>
+          <div class="dc-box-body">
+            <div class="dc-li">Explicitly avoids clinical language, diagnoses, or treatment recommendations.</div>
+            <div class="dc-li">Crisis detection immediately surfaces verified local crisis resources.</div>
+            <div class="dc-li">Built with mental health practitioners and diverse user panels.</div>
+            <div class="dc-li">Regular bias audits of NLP models across demographics and languages.</div>
+          </div>
+        </div>
+
+        <!-- Closing -->
+        <div class="dc-closing">
+          <p>"Mental health begins with awareness. Awareness begins with a safe place to look inward."</p>
+          <p style="margin-top:10px;font-style:normal;font-size:11px;color:#6EE7B7;">The Silent Spiral &nbsp;|&nbsp; Hackathon 2025 &nbsp;|&nbsp; For a world where no one spirals alone.</p>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted);">↑ Pixel-accurate preview of the generated .docx file opened in Microsoft Word</p>
+  </div>
+
+  <!-- ════════════════ TAB 2: APP SIM ════════════════ -->
+  <div class="tab-content" id="tab-app">
+    <p class="section-sub" style="text-align:center;margin-bottom:24px;">Simulate how the Silent Spiral app guides journaling, detects emotions, and surfaces patterns.</p>
+
+    <div class="phone-wrap">
+      <div class="phone-frame">
+        <div class="phone-notch"><div class="phone-notch-pill"></div></div>
+        <div class="phone-screen">
+
+          <!-- Screen: Daily Check-In -->
+          <div class="screen active" id="screen-checkin">
+            <div class="p-status"><span><span class="p-dot"></span> Silent Spiral</span><span>9:12 AM</span></div>
+            <div class="p-logo">The Silent Spiral 🌀</div>
+
+            <div class="prompt-card">
+              <div class="prompt-label">Today's Opening Prompt</div>
+              <div class="prompt-text">"How does your body feel right now — not your mind, just your body?"</div>
+            </div>
+
+            <div style="font-size:10px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">How are you feeling?</div>
+            <div class="mood-wheel" id="mood-wheel">
+              <div class="mood-chip" onclick="selectMood(this)"><span class="me">😔</span>Sad</div>
+              <div class="mood-chip" onclick="selectMood(this)"><span class="me">😰</span>Anxious</div>
+              <div class="mood-chip" onclick="selectMood(this)"><span class="me">😤</span>Frustrated</div>
+              <div class="mood-chip" onclick="selectMood(this)"><span class="me">😶</span>Numb</div>
+              <div class="mood-chip" onclick="selectMood(this)"><span class="me">😌</span>Calm</div>
+              <div class="mood-chip" onclick="selectMood(this)"><span class="me">😊</span>Content</div>
+              <div class="mood-chip" onclick="selectMood(this)"><span class="me">😩</span>Tired</div>
+              <div class="mood-chip" onclick="selectMood(this)"><span class="me">🤔</span>Confused</div>
+            </div>
+
+            <div class="journal-box">
+              <div class="journal-text" id="journal-text">I've been waking up tired even after a full night's sleep. It feels like carrying something heavy but I can't name what it is<span class="journal-cursor"></span></div>
+            </div>
+
+            <div style="margin-bottom:8px;">
+              <div style="font-size:9px;color:var(--muted);margin-bottom:5px;font-family:'JetBrains Mono',monospace;">DETECTED EMOTIONS</div>
+              <span class="emotion-tag">😔 Fatigue</span>
+              <span class="emotion-tag">😶 Emotional numbness</span>
+              <span class="emotion-tag p">🔍 Undefined distress</span>
+            </div>
+          </div>
+
+          <!-- Screen: Pattern Insights -->
+          <div class="screen" id="screen-patterns">
+            <div class="p-status"><span>📊 Patterns</span><span>Week 3</span></div>
+            <div class="p-logo" style="font-size:14px;margin-bottom:12px;">Your Emotional Journey</div>
+
+            <div class="emo-timeline">
+              <div class="emo-tl-label">Mood over the past 7 days</div>
+              <div class="emo-tl-row" id="emo-bars"></div>
+            </div>
+
+            <div class="pattern-alert">
+              <div class="pa-label">🔍 Pattern Detected</div>
+              <div class="pa-text">You've used the word "tired" in 5 of your last 7 entries. Your mood entries show a gentle downward drift since Monday. This might be worth exploring.</div>
+            </div>
+
+            <div class="vocab-section">
+              <div class="vocab-label">Words you've used most this week</div>
+              <div class="vocab-grid">
+                <span class="vocab-word core">tired</span>
+                <span class="vocab-word core">heavy</span>
+                <span class="vocab-word core">alone</span>
+                <span class="vocab-word">uncertain</span>
+                <span class="vocab-word">quiet</span>
+                <span class="vocab-word">overwhelmed</span>
+                <span class="vocab-word">numb</span>
+              </div>
+            </div>
+
+            <div class="prompt-card" style="margin-top:8px;">
+              <div class="prompt-label">Suggested Reflection</div>
+              <div class="prompt-text">"You mentioned feeling 'heavy' a few times. Is that weight coming from a specific situation, or does it feel more general?"</div>
+            </div>
+          </div>
+
+          <!-- Screen: Vocab Expansion -->
+          <div class="screen" id="screen-vocab">
+            <div class="p-status"><span>💬 Vocabulary</span><span>Expand</span></div>
+            <div class="p-logo" style="font-size:14px;margin-bottom:4px;">Name What You Feel</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.6;">You said "sad." Here are words that might be closer to what you mean:</div>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
+              <div style="font-size:10px;color:var(--teal-mid);margin-bottom:10px;font-family:'JetBrains Mono',monospace;">RELATED EMOTIONS — tap to explore</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;" id="vocab-expand">
+                <span class="vocab-word" onclick="selectVocab(this,'Melancholy — a gentle, lingering sadness')">melancholy</span>
+                <span class="vocab-word" onclick="selectVocab(this,'Grief — deep sorrow, often tied to loss')">grief</span>
+                <span class="vocab-word" onclick="selectVocab(this,'Wistful — longing for something past')">wistful</span>
+                <span class="vocab-word" onclick="selectVocab(this,'Desolate — a profound inner emptiness')">desolate</span>
+                <span class="vocab-word" onclick="selectVocab(this,'Despondent — loss of hope or courage')">despondent</span>
+                <span class="vocab-word" onclick="selectVocab(this,'Forlorn — lonely and abandoned feeling')">forlorn</span>
+                <span class="vocab-word" onclick="selectVocab(this,'Wretched — feeling distress and misery')">wretched</span>
+                <span class="vocab-word" onclick="selectVocab(this,'Bereft — feeling a great loss')">bereft</span>
+              </div>
+            </div>
+
+            <div id="vocab-def" style="display:none;background:rgba(13,148,136,0.1);border:1px solid rgba(13,148,136,0.25);border-radius:12px;padding:12px;font-size:12px;color:var(--text);line-height:1.6;"></div>
+
+            <div class="prompt-card" style="margin-top:10px;">
+              <div class="prompt-label">Why This Matters</div>
+              <div class="prompt-text">"The more precisely you can name a feeling, the easier it becomes to understand where it's coming from."</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="sim-controls">
+        <button class="sim-btn active" id="btn-checkin" onclick="showScreen('checkin')">📓 Journal</button>
+        <button class="sim-btn" id="btn-patterns" onclick="showScreen('patterns'); buildBars()">📊 Patterns</button>
+        <button class="sim-btn" id="btn-vocab" onclick="showScreen('vocab')">💬 Vocabulary</button>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin-top:10px;text-align:center;">Tap the buttons to explore different app screens</p>
+    </div>
+  </div>
+
+  <!-- ════════════════ TAB 3: HOW IT WORKS ════════════════ -->
+  <div class="tab-content" id="tab-flow">
+    <div class="section-title">How the Silent Spiral Works</div>
+    <p class="section-sub">From a journal entry to a meaningful insight — the full technical and experiential pipeline.</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="fs-num">01</div>
+        <div>
+          <div class="fs-title">📓 User Writes a Journal Entry</div>
+          <div class="fs-desc">The user is given a contextual prompt — adapted to their recent emotional tone and time of day. They write freely in natural language. No forms, no checkboxes. The prompt engine selects from 500+ therapeutic-adjacent prompts using a RAG pipeline.</div>
+          <span class="fs-tag">Prompt Engine (RAG)</span>
+          <span class="fs-tag">Adaptive prompts</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="fs-num">02</div>
+        <div>
+          <div class="fs-title">🔤 NLP Preprocessing</div>
+          <div class="fs-desc">The text is tokenized, normalized, and cleaned on-device. Colloquial language, regional expressions, and abbreviations are handled. Smart quotes and cultural idioms are preserved to avoid stripping meaning from non-Western expression.</div>
+          <span class="fs-tag">BERT Tokenizer</span>
+          <span class="fs-tag">On-device (ONNX)</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="fs-num">03</div>
+        <div>
+          <div class="fs-title">🧠 Emotion Classification</div>
+          <div class="fs-desc">A fine-tuned RoBERTa model (trained on GoEmotions — 27 emotion categories) classifies the entry. Output includes a primary emotion, secondary emotion, and confidence score. The model also flags absolutist language ("always", "never"), social withdrawal phrases, and cognitive distortion patterns.</div>
+          <span class="fs-tag">RoBERTa (fine-tuned)</span>
+          <span class="fs-tag">GoEmotions dataset</span>
+          <span class="fs-tag p">27 emotion categories</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="fs-num">04</div>
+        <div>
+          <div class="fs-title">📈 Longitudinal Drift Detection</div>
+          <div class="fs-desc">An LSTM-based time series model tracks sentiment polarity across 7, 14, and 30-day windows. Consistent downward drift — even mild — is the hallmark of the "silent spiral." Anomaly detection compares against the user's own personal baseline, not population norms, making detection culturally neutral.</div>
+          <span class="fs-tag">LSTM time-series</span>
+          <span class="fs-tag">Personal baseline</span>
+          <span class="fs-tag p">Not population norms</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="fs-num">05</div>
+        <div>
+          <div class="fs-title">💡 Vocabulary Expansion</div>
+          <div class="fs-desc">When the user uses vague words ("sad", "bad", "fine"), the vocab engine surfaces semantically related, more precise emotion words from the Emotion Wheel taxonomy. This helps users build richer emotional language over time — one of the core drivers of self-awareness.</div>
+          <span class="fs-tag">Emotion Wheel taxonomy</span>
+          <span class="fs-tag">Semantic similarity</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="fs-num">06</div>
+        <div>
+          <div class="fs-title">🔔 Gentle Reflection Nudges</div>
+          <div class="fs-desc">When patterns suggest emotional drift (3+ consecutive low-mood entries, increased isolation language, entry frequency drop), the app offers non-alarming nudges: a breathing exercise, a grounding prompt, or a gentle suggestion to connect with someone trusted. Never a clinical recommendation.</div>
+          <span class="fs-tag">Habit-loop model</span>
+          <span class="fs-tag p">Non-clinical language</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="fs-num">07</div>
+        <div>
+          <div class="fs-title">🔒 Privacy Preserved Throughout</div>
+          <div class="fs-desc">Every step runs entirely on-device. No journal text, emotion label, or behavioral signal ever leaves the phone. AES-256 encrypts the local database. Federated learning updates the model using gradient-only contributions — raw data stays with the user forever.</div>
+          <span class="fs-tag">AES-256 encryption</span>
+          <span class="fs-tag">Zero server transmission</span>
+          <span class="fs-tag p">Federated learning</span>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider"/>
+
+    <div class="section-title" style="font-size:22px;margin-bottom:8px;">Key Technical Components</div>
+    <p class="section-sub">Four pillars powering the awareness engine.</p>
+
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="hc-num">COMPONENT 01</div>
+        <div class="hc-icon">📝</div>
+        <div class="hc-title">Adaptive Prompt Engine</div>
+        <div class="hc-desc">RAG pipeline over a 500+ prompt library. Selects prompts based on current emotion classification, recent entry patterns, and time-of-day. LLM-assisted variation prevents prompt fatigue. Culturally localized across 5 regional contexts.</div>
+      </div>
+      <div class="how-card">
+        <div class="hc-num">COMPONENT 02</div>
+        <div class="hc-icon">🔬</div>
+        <div class="hc-title">NLP Emotion Pipeline</div>
+        <div class="hc-desc">Fine-tuned RoBERTa for 27-category emotion classification. Runs via ONNX Runtime on-device. Sentiment drift tracked with LSTM across sliding time windows. Linguistic marker rules detect cognitive distortions and withdrawal signals.</div>
+      </div>
+      <div class="how-card">
+        <div class="hc-num">COMPONENT 03</div>
+        <div class="hc-icon">📊</div>
+        <div class="hc-title">Pattern Recognition</div>
+        <div class="hc-desc">Personal baseline modeling with unsupervised clustering. Anomaly detection flags deviations from your own history — not population averages. Entry frequency itself is a signal: reduced journaling correlates with avoidance patterns in depressive states.</div>
+      </div>
+      <div class="how-card">
+        <div class="hc-num">COMPONENT 04</div>
+        <div class="hc-icon">💬</div>
+        <div class="hc-title">Vocabulary Expansion</div>
+        <div class="hc-desc">Emotion Wheel taxonomy with semantic similarity scoring. Maps user's vague terms to precise emotion vocabulary. Tracks vocabulary richness over time as a proxy metric for growing self-awareness — more words = more self-understanding.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:60px;"></div>
+</div>
+
+<script>
+  // ── Tab switching ─────────────────────────────────────────────────
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'app') buildBars();
+  }
+
+  // ── Screen switching ──────────────────────────────────────────────
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.sim-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+    document.getElementById('btn-' + name)?.classList.add('active');
+  }
+
+  // ── Mood selection ────────────────────────────────────────────────
+  function selectMood(el) {
+    document.querySelectorAll('.mood-chip').forEach(c => c.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+
+  // ── Vocabulary definition ─────────────────────────────────────────
+  function selectVocab(el, def) {
+    document.querySelectorAll('#vocab-expand .vocab-word').forEach(w => w.style.borderColor = '');
+    el.style.borderColor = 'var(--teal)';
+    el.style.color = 'var(--teal-mid)';
+    const box = document.getElementById('vocab-def');
+    box.style.display = 'block';
+    box.textContent = def;
+  }
+
+  // ── Emotion timeline bars ─────────────────────────────────────────
+  const moodData = [
+    { day: 'Mon', h: 70, color: '#059669' },
+    { day: 'Tue', h: 60, color: '#0D9488' },
+    { day: 'Wed', h: 45, color: '#D97706' },
+    { day: 'Thu', h: 40, color: '#EA580C' },
+    { day: 'Fri', h: 35, color: '#DC2626' },
+    { day: 'Sat', h: 38, color: '#EA580C' },
+    { day: 'Sun', h: 42, color: '#D97706' },
+  ];
+
+  function buildBars() {
+    const container = document.getElementById('emo-bars');
+    if (!container || container.children.length > 0) return;
+    moodData.forEach((d, i) => {
+      const col = document.createElement('div');
+      col.className = 'emo-dot-col';
+      col.innerHTML = `
+        <div class="emo-dot" style="background:linear-gradient(to top,${d.color}88,${d.color});height:${d.h * 0.6}px;opacity:0;transition:all 0.5s ${i * 0.08}s;" data-h="${d.h * 0.6}"></div>
+        <div class="emo-day">${d.day}</div>
+      `;
+      container.appendChild(col);
+    });
+    // Animate in
+    setTimeout(() => {
+      container.querySelectorAll('.emo-dot').forEach(dot => {
+        dot.style.opacity = '1';
+      });
+    }, 50);
+  }
+
+  // ── Typewriter journal simulation ─────────────────────────────────
+  const fullText = "I've been waking up tired even after a full night's sleep. It feels like carrying something heavy but I can't name what it is";
+  let typed = 0;
+  const jEl = document.getElementById('journal-text');
+
+  function typeJournal() {
+    if (!jEl) return;
+    if (typed < fullText.length) {
+      const cursor = '<span class="journal-cursor"></span>';
+      jEl.innerHTML = fullText.slice(0, ++typed) + cursor;
+      setTimeout(typeJournal, 28 + Math.random() * 20);
+    }
+  }
+
+  // Start typing after a short delay
+  setTimeout(typeJournal, 1200);
+</script>
+</body>
+</html>

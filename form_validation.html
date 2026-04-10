@@ -25,8 +25,109 @@
          <input type="password" id="password">
         <span id="passError"></span>
 
+        Confirm Password:
+         <input type="password" id="confirm">
+        <span id="confirmError"></span>
+           
+        <br><br>
+        <button type="Submit">Submit</button>
+        
+
 
     </form>
+
+    <script>
+        let form = document.getElementById("form");
+
+        //real time validation
+        document.getElementById("name").onkeyup=validateName;
+         document.getElementById("email").onkeyup=validateEmail;
+          document.getElementById("age").onkeyup=validateAge;
+           document.getElementById("password").onkeyup=validatePassword;
+            document.getElementById("confirm").onkeyup=validateConfirm;
+
+            //Name validation
+            function validateName(){
+                let name = document.getElementById("name").value;
+
+                if(name.trim() === ""){
+                   document.getElementById("nameError").innerText = "Name Required";
+                   setError("name");
+                   return false;
+                }
+                else{
+                    document.getElementById("nameError").innerText = "";
+                    setSuccess("name");
+                    return true;
+                }
+            }
+            
+            function validateEmail(){
+                let email = document.getElementById("email").value;
+
+                if(!email.match(pattern)){
+                   document.getElementById("emailError").innerText = "Enter valid Email";
+                   setError("email");
+                   return false;
+                }
+                else{
+                    document.getElementById("emailError").innerText = "";
+                    setSuccess("email");
+                    return true;
+                }
+            }
+            
+
+            function validateAge(){
+                let age = document.getElementById("age").value;
+
+                if(age < 18 || age ===""){
+                   document.getElementById("ageError").innerText = "Age is Required";
+                   setError("age");
+                   return false;
+                }
+                else{
+                    document.getElementById("ageError").innerText = "";
+                    setSuccess("age");
+                    return true;
+                }
+            }
+
+            
+
+            function validatePassword(){
+                let password = document.getElementById("name").value;
+
+                if(password){
+                   document.getElementById("passwordError").innerText = "Must be of 6 digits";
+                   setError("password");
+                   return false;
+                }
+                else{
+                    document.getElementById("passwordError").innerText = "";
+                    setSuccess("password");
+                    return true;
+                }
+            }
+            
+      
+
+            function validateConfirm(){
+                let confirm = document.getElementById("confirm").value;
+
+                if(confirm.trim() === ""){
+                   document.getElementById("confirmError").innerText = "Confirm the data";
+                   setError("confirm");
+                   return false;
+                }
+                else{
+                    document.getElementById("confirmError").innerText = "";
+                    setSuccess("confirm");
+                    return true;
+                }
+            }
+
+    </script>
     
 </body>
 </html>
